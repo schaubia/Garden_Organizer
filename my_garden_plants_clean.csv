@@ -1,0 +1,70 @@
+﻿name,latin,zone,sun,soil,wind,is_bulb,notes
+Орех,Juglans regia,North Corner (shade),partial_shade,well_drained,sheltered,no,Walnut tree
+Дрян,Cornus mas,Garden West,full_sun,well_drained,tolerant,no,Cornel
+Мушмула,Mespilus germanica,Garden South,full_sun,well_drained,tolerant,no,Medlar tree
+Гинко,Ginkgo biloba,Garden South,full_sun,well_drained,tolerant,no,Ginkgo tree
+Дюля,Cydonia oblonga,Garden South,full_sun,well_drained,tolerant,no,Quince
+Глог,Crataegus monogyna,Alpineum,full_sun,well_drained,tolerant,no,Hawthorn
+Котонеастер,Cotoneaster spp.,Alpineum,full_sun,well_drained,tolerant,no,Cotoneaster
+Лъжлив кипарис,Chamaecyparis,Alpineum,full_sun,well_drained,tolerant,no,Chamaecyparis
+Леска,Corylus avellana,Garden South,full_sun,well_drained,tolerant,no,Hazel
+Зърнастец,Rhamnus spp.,Garden South,full_sun,well_drained,tolerant,no,Rhamnus
+Салвия (градински чай),Salvia officinalis,Alpineum,full_sun,well_drained,tolerant,no,Salvia
+Винка малка и пъстролистна,Vinca minor / major,Alpineum,full_sun,well_drained,tolerant,no,Vinca
+Клек (джудже бор),Pinus mugo,Alpineum,full_sun,well_drained,tolerant,no,Dwarf pine
+Хвойна,Juniperus spp.,Alpineum,full_sun,well_drained,tolerant,no,Juniper
+Пъскав нокът,Lonicera nitida,Garden South,full_sun,well_drained,tolerant,no,Lonicera
+Калина,Viburnum lantana,Garden East,full_sun,well_drained,tolerant,no,Wayfaring tree
+Пираканта,Pyracantha coccinea,Garden East,full_sun,well_drained,tolerant,no,Pyracantha
+Дива лоза,Parthenocissus quinquefolia,Garden South,full_sun,well_drained,tolerant,no,Virginia creeper
+Див (сибирски) лук,Allium schoenoprasum,Garden South,full_sun,well_drained,tolerant,yes,Chives
+Махония,Mahonia aquifolium,Garden East,full_sun,well_drained,tolerant,no,Mahonia
+Чашкодрян,Euonymus europaeus / japonicus,Alpineum,full_sun,well_drained,tolerant,no,Spindle tree
+Шипка,Rosa canina,Garden West,full_sun,well_drained,tolerant,no,Rosehip
+Рудбекия,Rudbeckia hirta,Alpineum,full_sun,well_drained,tolerant,no,Rudbeckia
+Птиче грозде (Лигуструм),Ligustrum vulgare,Alpineum,full_sun,well_drained,tolerant,no,Privet
+Мента,Mentha spp.,Alpineum,full_sun,moist,tolerant,no,Mint
+Декоративен лук,Allium moly,Garden South,full_sun,well_drained,tolerant,yes,Allium moly
+Далия,Dahlia spp.,Pool Side South,full_sun,well_drained,tolerant,yes,Dahlia
+Божур бял & Хортензия,Paeonia spp. & Hydrangea spp.,Garden West (partial shade),full_sun,well_drained,tolerant,no,Peony & Hydrangea
+Ехинацея,Echinacea purpurea,Garden West (partial shade),full_sun,well_drained,tolerant,no,Echinacea
+Абисинска гладиола,Gladiolus murielae,Garden East,full_sun,well_drained,tolerant,yes,Abyssinian gladiolus
+Лупина,Lupinus spp.,Alpineum,full_sun,well_drained,tolerant,no,Lupinus (bluebonnet)
+Хибискус,Hibiscus spp.,Garden North (shade),partial_shade,well_drained,sheltered,no,Hibiscus
+Еделвайс,Leontopodium alpinum,Alpineum,full_sun,well_drained,tolerant,no,Edelweiss
+Актинидия (мини киви),Actinidia arguta,Garden South,full_sun,well_drained,tolerant,no,Hardy kiwi
+Кученце,Antirrhinum,Garden North (shade),full_shade,well_drained,sheltered,no,Antirrhinum
+Лавровишня,Prunus laurocerasus,Garden South,full_sun,well_drained,tolerant,no,Cherry (English) Laurel
+Мащерка,Thymus vulgaris,Alpineum,full_sun,well_drained,sheltered,no,Thyme
+Маточина,Melissa officinalis,Garden East,full_sun,moist,tolerant,no,Lemon balm (Melissa)
+Върболистен тъжник,Spiraea salicifolia,Garden West,partial_shade,well_drained,tolerant,no,Bridgewort (Spiraea)
+Момина сълза,Convallaria majalis,Garden North (shade),full_shade,moist,sheltered,no,Lily of the valley
+Дебелец / алпийска роза,Sempervivum spp.,Alpineum,full_sun,well_drained,tolerant,no,Sempervivum
+Невен,Calendula officinalis,Garden South,full_sun,well_drained,tolerant,no,Calendula
+Власатка (Овсига фестука),Festuca glauca,Alpineum,full_sun,well_drained,tolerant,no,Fescue
+Кампсис (Тромпетна лоза / Текома),Campsis spp.,Garden South,full_sun,well_drained,tolerant,no,Campsis
+Дойция,Deutzia spp.,Garden South,full_shade,well_drained,sheltered,no,Deutzia
+Берберис (кисел трън),Berberis julianae,Garden South,full_sun,well_drained,tolerant,no,Barberry
+Каликарпа,Callicarpa bodinieri,Garden South,full_sun,well_drained,tolerant,no,Beautyberry
+Клематис,Clematis spp.,Garden West,full_sun,well_drained,tolerant,no,Clematis
+Жасмин,Jasminum officinale,Garden North (shade),full_sun,well_drained,sheltered,no,Jasmine
+Вайгела,Weigela florida,Garden South,full_sun,well_drained,tolerant,no,Weigela
+Стахис (Агнешко/заешко ухо чистец),Stachys byzantina,Alpineum,full_sun,well_drained,tolerant,no,Lamb's ear
+Хоста,Hosta spp.,Garden North (shade),partial_shade,moist,tolerant,no,Hosta
+Бръшлян,Hedera helix,Garden North (shade),partial_shade,well_drained,sheltered,no,Ivy
+Калифорнийски мак,Eschscholzia californica,Garden South,full_sun,well_drained,tolerant,no,California poppy
+Рожец / Церастиум,Cerastium tomentosum,Garden South,full_sun,well_drained,tolerant,no,Snow-in-summer
+Лютиче,Ranunculus spp.,Garden South,full_sun,well_drained,tolerant,yes,Buttercup / Ranunculus
+Маргаритка / паричка,Bellis perennis,Garden South,full_sun,well_drained,tolerant,no,Daisy (Bellis)
+Зюмбюл,Hyacinthus,Garden South,full_sun,well_drained,tolerant,yes,Hyacinth
+Бергения,Bergenia cordifolia,Garden North (shade),full_shade,moist,sheltered,no,Bergenia
+Ирис,Iris spp.,Garden West,full_sun,well_drained,sheltered,yes,Iris
+Флокс,Phlox spp.,Alpineum,full_sun,well_drained,tolerant,no,Phlox
+Кукувиче грозде,Muscari botryoides,Alpineum,partial_shade,well_drained,tolerant,yes,Garden grape-hyacinth
+Обикновен синчец,Scilla bifolia,Alpineum,partial_shade,well_drained,tolerant,yes,Alpine squill
+Калоцефалус,Callocephalus spp.,Alpineum,full_sun,well_drained,tolerant,no,Beauty-heads
+Калуна,Calluna vulgaris,Alpineum,full_sun,well_drained,tolerant,no,Common heather
+Сребриста сантолина,Santolina chamaecyparissus,Alpineum,full_sun,well_drained,tolerant,no,Cotton lavender
+Еониум,Aeonium spp.,Alpineum,full_sun,well_drained,tolerant,no,Tree houseleeks
+Аубриета,Aubrieta deltoidea,Alpineum,full_sun,well_drained,tolerant,no,Rock cress
+Иберис,Iberis spp.,Alpineum,partial_shade,well_drained,sheltered,no,Candytuft
