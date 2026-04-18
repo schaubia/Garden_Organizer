@@ -1,0 +1,70 @@
+﻿name,latin,zone,sun,soil,wind,is_bulb,notes
+Орех,Juglans regia,,full_sun,well_drained,sheltered,no,Walnut tree | habitat: full_sun
+Дрян,Cornus mas,,full_sun,well_drained,tolerant,no,Cornel | habitat: full_sun
+Мушмула,Mespilus germanica,,full_sun,well_drained,tolerant,no,Medlar tree | habitat: full_sun
+Гинко,Ginkgo biloba,,full_sun,well_drained,tolerant,no,Ginkgo tree | habitat: full_sun
+Дюля,Cydonia oblonga,,full_sun,well_drained,tolerant,no,Quince | habitat: full_sun
+Глог,Crataegus monogyna,,full_sun,well_drained,tolerant,no,Hawthorn | habitat: full_sun
+Котонеастер,Cotoneaster spp.,,full_sun,well_drained,tolerant,no,Cotoneaster | habitat: full_sun
+Лъжлив кипарис,Chamaecyparis,,full_sun,well_drained,tolerant,no,Chamaecyparis | habitat: full_sun
+Леска,Corylus avellana,,full_sun,well_drained,tolerant,no,Hazel | habitat: full_sun
+Зърнастец,Rhamnus spp.,,full_sun,well_drained,tolerant,no,Rhamnus | habitat: full_sun
+Салвия (градински чай),Salvia officinalis,,full_sun,well_drained,tolerant,no,Salvia | habitat: full_sun
+Винка малка и пъстролистна,Vinca minor / major,,full_sun,well_drained,tolerant,no,Vinca | habitat: full_sun
+Клек (джудже бор),Pinus mugo,,full_sun,well_drained,tolerant,no,Dwarf pine | habitat: full_sun
+Хвойна,Juniperus spp.,,full_sun,well_drained,tolerant,no,Juniper | habitat: full_sun
+Пъскав нокът,Lonicera nitida,,full_sun,well_drained,tolerant,no,Lonicera | habitat: full_sun
+Калина,Viburnum lantana,,full_sun,well_drained,tolerant,no,Wayfaring tree | habitat: full_sun
+Пираканта,Pyracantha coccinea,,full_sun,well_drained,tolerant,no,Pyracantha | habitat: full_sun
+Дива лоза,Parthenocissus quinquefolia,,full_sun,well_drained,tolerant,no,Virginia creeper | habitat: full_sun
+Див (сибирски) лук,Allium schoenoprasum,,full_sun,well_drained,tolerant,yes,Chives | habitat: full_sun
+Махония,Mahonia aquifolium,,full_sun,well_drained,tolerant,no,Mahonia | habitat: full_sun
+Чашкодрян,Euonymus europaeus / japonicus,,full_sun,well_drained,tolerant,no,Spindle tree | habitat: full_sun
+Шипка,Rosa canina,,full_sun,well_drained,tolerant,no,Rosehip | habitat: full_sun
+Рудбекия,Rudbeckia hirta,,partial_shade,well_drained,tolerant,no,Rudbeckia | habitat: partial sun
+Птиче грозде (Лигуструм),Ligustrum vulgare,,full_sun,well_drained,tolerant,no,Privet | habitat: full_sun
+Мента,Mentha spp.,,full_sun,moist,tolerant,no,Mint | habitat: full_sun
+Декоративен лук,Allium moly,,full_sun,well_drained,tolerant,yes,Allium moly | habitat: full_sun
+Далия,Dahlia spp.,,full_sun,well_drained,tolerant,yes,Dahlia | habitat: full_sun
+Божур бял & Хортензия,Paeonia spp. & Hydrangea spp.,,partial_shade,well_drained,tolerant,no,Peony & Hydrangea | habitat: half shade
+Ехинацея,Echinacea purpurea,,partial_shade,well_drained,tolerant,no,Echinacea | habitat: half shade
+Абисинска гладиола,Gladiolus murielae,,full_sun,well_drained,tolerant,yes,Abyssinian gladiolus | habitat: full_sun
+Лупина,Lupinus spp.,,full_sun,well_drained,tolerant,no,Lupinus (bluebonnet) | habitat: full_sun
+Хибискус,Hibiscus spp.,,partial_shade,well_drained,sheltered,no,Hibiscus | habitat: half shade
+Еделвайс,Leontopodium alpinum,,full_sun,well_drained,tolerant,no,Edelweiss | habitat: full_sun
+Актинидия (мини киви),Actinidia arguta,,full_sun,well_drained,tolerant,no,Hardy kiwi | habitat: full_sun
+Кученце,Antirrhinum,,partial_shade,well_drained,sheltered,no,Antirrhinum | habitat: half shade
+Лавровишня,Prunus laurocerasus,,full_sun,well_drained,tolerant,no,Cherry (English) Laurel | habitat: full_sun
+Мащерка,Thymus vulgaris,,partial_shade,well_drained,sheltered,no,Thyme | habitat: half shade
+Маточина,Melissa officinalis,,full_sun,moist,tolerant,no,Lemon balm (Melissa) | habitat: full_sun
+Върболистен тъжник,Spiraea salicifolia,,partial_shade,well_drained,tolerant,no,Bridgewort (Spiraea) | habitat: half shade
+Момина сълза,Convallaria majalis,,full_shade,moist,sheltered,no,Lily of the valley | habitat: half shade
+Дебелец / алпийска роза,Sempervivum spp.,,full_sun,well_drained,tolerant,no,Sempervivum | habitat: full_sun
+Невен,Calendula officinalis,,full_sun,well_drained,tolerant,no,Calendula | habitat: full_sun
+Власатка (Овсига фестука),Festuca glauca,,partial_shade,well_drained,tolerant,no,Fescue | habitat: half shade
+Кампсис (Тромпетна лоза / Текома),Campsis spp.,,full_sun,well_drained,tolerant,no,Campsis | habitat: full_sun
+Дойция,Deutzia spp.,,partial_shade,well_drained,sheltered,no,Deutzia | habitat: half shade
+Берберис (кисел трън),Berberis julianae,,full_sun,well_drained,tolerant,no,Barberry | habitat: full_sun
+Каликарпа,Callicarpa bodinieri,,full_sun,well_drained,tolerant,no,Beautyberry | habitat: full_sun
+Клематис,Clematis spp.,,full_sun,well_drained,tolerant,no,Clematis | habitat: full_sun
+Жасмин,Jasminum officinale,,partial_shade,well_drained,sheltered,no,Jasmine | habitat: half shade
+Вайгела,Weigela florida,,full_sun,well_drained,tolerant,no,Weigela | habitat: full_sun
+Стахис (Агнешко/заешко ухо чистец),Stachys byzantina,,full_sun,well_drained,tolerant,no,Lamb's ear | habitat: full_sun
+Хоста,Hosta spp.,,partial_shade,moist,tolerant,no,Hosta | habitat: half shade
+Бръшлян,Hedera helix,,full_sun,well_drained,sheltered,no,Ivy | habitat: full_sun
+Калифорнийски мак,Eschscholzia californica,,full_sun,well_drained,tolerant,no,California poppy | habitat: full_sun
+Рожец / Церастиум,Cerastium tomentosum,,full_sun,well_drained,tolerant,no,Snow-in-summer | habitat: full_sun
+Лютиче,Ranunculus spp.,,full_sun,well_drained,tolerant,yes,Buttercup / Ranunculus | habitat: full_sun
+Маргаритка / паричка,Bellis perennis,,full_sun,well_drained,tolerant,no,Daisy (Bellis) | habitat: full sun
+Зюмбюл,Hyacinthus,,partial_shade,well_drained,tolerant,yes,Hyacinth | habitat: half shade
+Бергения,Bergenia cordifolia,,full_shade,moist,sheltered,no,Bergenia | habitat: shade
+Ирис,Iris spp.,,partial_shade,well_drained,sheltered,yes,Iris | habitat: half shade
+Флокс,Phlox spp.,,full_sun,well_drained,tolerant,no,Phlox | habitat: full_sun
+Кукувиче грозде,Muscari botryoides,,full_sun,well_drained,tolerant,yes,Garden grape-hyacinth | habitat: full_sun
+Обикновен синчец,Scilla bifolia,,full_sun,well_drained,tolerant,yes,Alpine squill | habitat: full_sun
+Калоцефалус,Callocephalus spp.,,full_sun,well_drained,tolerant,no,Beauty-heads | habitat: full_sun
+Калуна,Calluna vulgaris,,full_sun,well_drained,tolerant,no,Common heather | habitat: full_sun
+Сребриста сантолина,Santolina chamaecyparissus,,full_sun,well_drained,tolerant,no,Cotton lavender | habitat: full_sun
+Еониум,Aeonium spp.,,full_sun,well_drained,tolerant,no,Tree houseleeks | habitat: full_sun
+Аубриета,Aubrieta deltoidea,,full_sun,well_drained,tolerant,no,Rock cress | habitat: full_sun
+Иберис,Iberis spp.,,full_sun,well_drained,sheltered,no,Candytuft | habitat: full_sun
