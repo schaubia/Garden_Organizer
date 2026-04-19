@@ -1,4 +1,4 @@
-# 🌿 Garden Planner — Sofia Edition
+# 🌿 Garden Organizer
 
 A Streamlit web application for managing your garden plants with weather-aware care schedules, placement advice, and AI-powered deep-dive analysis. Built for the **continental climate of Sofia, Bulgaria** (hot dry summers, cold winters, frost October–April).
 
