@@ -20,10 +20,10 @@ A Streamlit web application for managing your garden plants with weather-aware c
 
 ```
 garden_planner/
-├── app.py                    # Main Streamlit application
+├── streamlit_app.py                    # Main Streamlit application
 ├── requirements.txt          # Python dependencies
-├── my_plants_template.csv    # Example CSV template
-└── README.md                 # This file
+├── my_plants_template.csv    # Example CSV template - 3 versions
+└── README.md                 
 ```
 
 ---
