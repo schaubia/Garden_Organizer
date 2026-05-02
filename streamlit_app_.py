@@ -308,14 +308,9 @@ with st.sidebar:
 df = st.session_state.plants_df
 wx = st.session_state.wx or {"ok":False}
 
-def require_plants(key):
+def require_plants():
     if st.session_state.plants_df is None:
-        st.markdown("### 📂 Upload your plant list to get started")
-        up = st.file_uploader("CSV or XLSX", type=["csv","xlsx","xls"], key=key)
-        if up:
-            parsed,err = parse_upload(up)
-            if err: st.error(f"❌ {err}")
-            else: st.session_state.plants_df = parsed; st.session_state.advice_cache = {}; st.rerun()
+        st.info("📂 Upload your plant list using the uploader in the **sidebar on the left**.")
         st.stop()
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -341,7 +336,7 @@ if tab_choice == "🌤️ Dashboard":
             if wx["rain"][i]>0: col.caption(f"💧{wx['rain'][i]:.0f}mm")
     else: st.info("Weather unavailable — check connection and refresh.")
     st.divider()
-    require_plants("dash_uploader")
+    require_plants()
 
     n_set = int((df["actual_sun"].notna() & (df["actual_sun"] != "")).sum())
     mismatches = [(row, sun_mismatch(row.get("sun_needed"), row.get("actual_sun")))
@@ -396,7 +391,7 @@ if tab_choice == "🌤️ Dashboard":
 elif tab_choice == "☀️ Sun Setup":
     st.markdown("# ☀️ Sun Position Setup")
     st.caption("Set how much sun each plant actually gets where it's planted.")
-    require_plants("sun_uploader")
+    require_plants()
     st.markdown('<div class="sec-hdr">Bulk assign</div>', unsafe_allow_html=True)
     bc1,bc2,bc3,bc4 = st.columns([2.5,1.2,1.5,1.3])
     bulk_q = bc1.text_input("Filter (empty = all)", placeholder="e.g. роза…", label_visibility="collapsed")
@@ -430,7 +425,7 @@ elif tab_choice == "☀️ Sun Setup":
 # ══════════════════════════════════════════════════════════════════════════════
 elif tab_choice == "📋 Care Schedule":
     st.markdown("# 📋 Care Schedule")
-    require_plants("care_uploader")
+    require_plants()
 
     view = st.radio("View", ["📅 By month","🌿 By plant","🫙 Bulbs only","⚠️ Mismatches only"], horizontal=True)
     st.divider()
@@ -557,7 +552,7 @@ elif tab_choice == "📋 Care Schedule":
 elif tab_choice == "🤖 AI Deep Dive":
     st.markdown("# 🤖 AI Deep Dive")
     st.caption("Get detailed, weather-aware advice for a specific plant — especially useful for placement problems.")
-    require_plants("ai_uploader")
+    require_plants()
 
     plant_opts = df["name"].tolist()
     selected = st.selectbox("Choose a plant", plant_opts)
@@ -643,14 +638,4 @@ If `pruning`, `feeding`, `watering` columns are present, the app uses them. If m
     ])
     st.download_button("⬇️ Download CSV template", tpl.to_csv(index=False).encode(), "garden_template.csv","text/csv")
     st.divider()
-    up = st.file_uploader("Upload your file", type=["csv","xlsx","xls"], key="upload_tab")
-    if up:
-        parsed,err = parse_upload(up)
-        if err: st.error(f"❌ {err}")
-        else:
-            st.success(f"✅ {len(parsed)} plants found")
-            show_cols = [c for c in ["name","latin","sun_needed","actual_sun","soil","is_bulb","pruning","feeding","watering"] if c in parsed.columns]
-            st.dataframe(parsed[show_cols], use_container_width=True, hide_index=True)
-            if st.button("✅ Use this list", type="primary", use_container_width=True):
-                st.session_state.plants_df = parsed; st.session_state.advice_cache = {}
-                st.success("Loaded! Go to **☀️ Sun Setup** then **📋 Care Schedule**.")
+    st.info("📂 To load your plant list, use the uploader in the **sidebar on the left**. This tab is only for downloading the template or adding individual plants manually.")
