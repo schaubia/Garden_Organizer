@@ -346,6 +346,18 @@ def require_plants():
         st.info("📂 Upload your plant list using the uploader in the **sidebar on the left**.")
         st.stop()
 
+# ── Session state initialisation ──────────────────────────────────────────────
+for k, v in [
+    ("plants_df",    None),
+    ("advice_cache", {}),
+    ("wx",           None),
+    ("location",     {"name":"Sofia","country":"Bulgaria","region":"Sofia-Capital",
+                      "lat":42.698,"lon":23.322,"timezone":"Europe/Sofia","elevation":550}),
+    ("climate_desc", "continental (cold winters with frost, hot dry summers)"),
+]:
+    if k not in st.session_state:
+        st.session_state[k] = v
+
 # ── Sidebar ────────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("## 🌿 Garden Planner")
