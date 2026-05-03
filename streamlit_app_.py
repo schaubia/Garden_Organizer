@@ -1,4 +1,4 @@
-"""🌿 Garden Planner — works for any location worldwide"""
+"""🌿 Garden Planner — Sofia Edition"""
 import streamlit as st
 import pandas as pd
 import json
@@ -38,6 +38,7 @@ h1,h2,h3 { font-family: 'Cormorant Garamond', serif !important; }
 """, unsafe_allow_html=True)
 
 # ── Constants ──────────────────────────────────────────────────────────────────
+SOFIA_LAT, SOFIA_LON = 42.698, 23.322
 WMO = {0:"Clear sky",1:"Mainly clear",2:"Partly cloudy",3:"Overcast",45:"Foggy",
        51:"Light drizzle",53:"Drizzle",61:"Slight rain",63:"Rain",65:"Heavy rain",
        71:"Slight snow",73:"Snow",80:"Rain showers",82:"Violent showers",95:"Thunderstorm"}
@@ -159,58 +160,16 @@ def tasks_this_month(df, month):
 
 # ── Weather ────────────────────────────────────────────────────────────────────
 @st.cache_data(ttl=3600)
-def geocode_location(city_name: str):
-    """Geocode a city name using Open-Meteo geocoding API."""
-    import urllib.parse
-    url = (f"https://geocoding-api.open-meteo.com/v1/search"
-           f"?name={urllib.parse.quote(city_name)}&count=1&language=en&format=json")
-    try:
-        req = urllib.request.Request(url, headers={"User-Agent":"GardenPlanner/1.0"})
-        with urllib.request.urlopen(req, timeout=8) as r:
-            data = json.loads(r.read())
-        if not data.get("results"):
-            return {"error": f"Location '{city_name}' not found."}
-        r = data["results"][0]
-        return {
-            "name":     r["name"],
-            "country":  r.get("country", ""),
-            "region":   r.get("admin1", ""),
-            "lat":      r["latitude"],
-            "lon":      r["longitude"],
-            "timezone": r.get("timezone", "UTC"),
-            "elevation":r.get("elevation", 0),
-        }
-    except Exception as e:
-        return {"error": str(e)}
-
-@st.cache_data(ttl=3600)
-def fetch_weather(lat: float, lon: float, timezone: str):
-    import urllib.parse
-    url = (f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}"
+def fetch_weather():
+    url = (f"https://api.open-meteo.com/v1/forecast?latitude={SOFIA_LAT}&longitude={SOFIA_LON}"
            f"&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,uv_index_max,weathercode"
-           f"&current_weather=true&timezone={urllib.parse.quote(timezone)}&forecast_days=7")
+           f"&current_weather=true&timezone=Europe%2FSofia&forecast_days=7")
     try:
         req = urllib.request.Request(url, headers={"User-Agent":"GardenPlanner/1.0"})
         with urllib.request.urlopen(req, timeout=8) as r:
             return json.loads(r.read())
     except Exception as e:
         return {"error": str(e)}
-
-def detect_climate(lat: float, avg_min_winter: float, avg_max_summer: float) -> str:
-    """Infer a broad climate description from coordinates and seasonal temps."""
-    if lat > 60:
-        return "subarctic/nordic (long cold winters, short cool summers)"
-    if avg_min_winter <= -5 and avg_max_summer >= 28:
-        return "continental (cold winters with frost, hot dry summers)"
-    if avg_min_winter <= 0 and avg_max_summer >= 22:
-        return "temperate continental (cold winters, warm summers)"
-    if avg_min_winter > 8 and avg_max_summer > 28:
-        return "mediterranean (mild wet winters, hot dry summers)"
-    if avg_min_winter > 10 and avg_max_summer > 32:
-        return "subtropical/warm (mild winters, very hot summers)"
-    if avg_min_winter < -15:
-        return "cold continental (very cold winters, warm short summers)"
-    return "temperate oceanic (mild winters, cool summers, year-round rain)"
 
 def parse_weather(raw):
     if "error" in raw: return {"ok":False}
@@ -284,20 +243,72 @@ def ask_claude(system, user):
         return json.loads(r.read())["content"][0]["text"]
 
 def build_prompt(row, wx, today):
-    loc = st.session_state.get("location", {})
-    climate = st.session_state.get("climate_desc", "temperate")
-    loc_name = f"{loc.get('name', '')}, {loc.get('country', '')}" if loc else "unknown location"
     season = "Spring" if today.month in [3,4,5] else "Summer" if today.month in [6,7,8] else "Autumn" if today.month in [9,10,11] else "Winter"
-    wx_block = (f"Current weather in {loc_name}: {wx['temp_now']}°C {wx['desc_now']}, today {wx['temp_max']}°/{wx['temp_min']}°C, UV {wx['uv']}, rain {wx['rain_today']}mm today / {wx['weekly_rain']:.0f}mm this week. Frost days: {wx['frost_days'] or 'none'}. Soil: {'DRY — irrigation needed' if wx['soil_dry'] else 'adequately moist'}." if wx.get("ok") else "")
-    needed = SUN_OPTIONS.get(str(row.get("sun_needed") or ""), "unknown")
-    actual = SUN_OPTIONS.get(str(row.get("actual_sun") or ""), "not set")
-    mtype  = sun_mismatch(row.get("sun_needed"), row.get("actual_sun"))
-    placement = (f"⚠️ PLACEMENT PROBLEM: needs {needed} but gets {actual} — {'too much sun' if mtype == 'over' else 'too little sun'}."
-                 if mtype else f"Sun: {actual} (needs {needed}).")
-    return (f"Location: {loc_name} | Climate: {climate}\n"
-            f"Plant: {row['name']} ({row.get('latin') or ''})\n{placement}\n"
+    wx_block = (f"Weather Sofia: {wx['temp_now']}°C {wx['desc_now']}, {wx['temp_max']}°/{wx['temp_min']}°, UV {wx['uv']}, rain {wx['rain_today']}mm today/{wx['weekly_rain']:.0f}mm week. Frost: {wx['frost_days'] or 'none'}. Soil: {'DRY' if wx['soil_dry'] else 'moist'}." if wx.get("ok") else "")
+    needed = SUN_OPTIONS.get(str(row.get("sun_needed") or ""),"unknown")
+    actual = SUN_OPTIONS.get(str(row.get("actual_sun") or ""),"not set")
+    mtype  = sun_mismatch(row.get("sun_needed"),row.get("actual_sun"))
+    placement = (f"⚠️ PLACEMENT PROBLEM: needs {needed} but gets {actual} — {'too much sun' if mtype=='over' else 'too little sun'}." if mtype else f"Sun: {actual} (needs {needed}).")
+    return (f"Plant: {row['name']} ({row.get('latin') or ''})\n{placement}\n"
             f"Soil: {row.get('soil') or 'not specified'} | Bulb: {'yes' if row.get('is_bulb') else 'no'}\n"
             f"Notes: {row.get('notes') or 'none'}\nSeason: {season}, {today.strftime('%d %B %Y')}\n{wx_block}")
+
+SYSTEM_CARE = """Expert organic gardener, Sofia Bulgaria (continental climate). Practical, specific, weather-aware. Exact months. Biological/organic only.
+Format response EXACTLY as:
+PRUNING: [advice]
+FEEDING: [advice]
+WATERING: [advice]
+BULB_CARE: [only for bulbs — when to lift, store, replant. Omit otherwise]
+PLACEMENT: [if sun matches confirm. If wrong: '⚠️ UNSUITABLE' + explain + REPLANT or REMOVE + best month]
+ALTERNATIVES: [only if UNSUITABLE — 3 plants that thrive in actual conditions]
+2–4 sentences each."""
+
+# ── Session state ──────────────────────────────────────────────────────────────
+for k,v in [("plants_df",None),("advice_cache",{}),("wx",None)]:
+    if k not in st.session_state: st.session_state[k] = v
+
+# ── Sidebar ────────────────────────────────────────────────────────────────────
+with st.sidebar:
+    st.markdown("## 🌿 Garden Planner")
+    st.caption("Sofia, Bulgaria")
+    st.divider()
+    tab_choice = st.radio("Navigate",
+        ["🌤️ Dashboard","☀️ Sun Setup","📋 Care Schedule","🤖 AI Deep Dive","📤 Upload"],
+        label_visibility="collapsed")
+    st.divider()
+    plant_count = len(st.session_state.plants_df) if st.session_state.plants_df is not None else 0
+    if plant_count:
+        n_set = int((st.session_state.plants_df["actual_sun"].notna() & (st.session_state.plants_df["actual_sun"] != "")).sum())
+        st.success(f"✅ {plant_count} plants loaded")
+        st.caption(f"☀️ {n_set}/{plant_count} sun positions set")
+        if st.button("↩️ Replace plant list", use_container_width=True):
+            st.session_state.plants_df = None; st.session_state.advice_cache = {}; st.rerun()
+    else:
+        st.markdown("**📂 Load your plants:**")
+        sb_file = st.file_uploader("CSV or XLSX", type=["csv","xlsx","xls"], key="sidebar_uploader", label_visibility="collapsed")
+        if sb_file:
+            parsed, err = parse_upload(sb_file)
+            if err: st.error(f"❌ {err}")
+            else: st.session_state.plants_df = parsed; st.session_state.advice_cache = {}; st.rerun()
+    st.divider()
+    if st.button("🔄 Refresh Weather", use_container_width=True):
+        st.cache_data.clear(); st.session_state.wx = None
+    if st.session_state.wx is None:
+        with st.spinner("Fetching Sofia weather…"):
+            st.session_state.wx = parse_weather(fetch_weather())
+    wx = st.session_state.wx
+    if wx.get("ok"):
+        st.markdown(f"**{wx['temp_now']}°C** · {wx['desc_now']}")
+        st.caption(f"↑{wx['temp_max']}° ↓{wx['temp_min']}° · UV {wx['uv']} · 🌧️ {wx['rain_today']}mm")
+        if wx["frost_risk"]: st.warning(f"❄️ Frost: {', '.join(wx['frost_days'])}")
+    else: st.caption("Weather unavailable")
+    st.divider()
+    today = st.date_input("📅 Date", value=date.today())
+
+df = st.session_state.plants_df
+wx = st.session_state.wx or {"ok":False}
+
+
 def render_tasks_by_type(tasks, month_name=""):
     """Render tasks grouped by type in side-by-side coloured tables."""
     from collections import defaultdict
@@ -351,10 +362,9 @@ def require_plants():
 # ══════════════════════════════════════════════════════════════════════════════
 if tab_choice == "🌤️ Dashboard":
     st.markdown("# 🌿 Garden Dashboard")
-    loc = st.session_state.location
     if wx.get("ok"):
         st.markdown(f"""<div class="wx-bar">
-          <div class="wx-item"><div class="wx-val">{wx['temp_now']}°C</div><div class="wx-lbl">Now · {loc['name']}</div></div>
+          <div class="wx-item"><div class="wx-val">{wx['temp_now']}°C</div><div class="wx-lbl">Now</div></div>
           <div class="wx-item"><div class="wx-val">{wx['temp_max']}° / {wx['temp_min']}°</div><div class="wx-lbl">Today</div></div>
           <div class="wx-item"><div class="wx-val">{wx['uv']}</div><div class="wx-lbl">UV Index</div></div>
           <div class="wx-item"><div class="wx-val">{wx['rain_today']} mm</div><div class="wx-lbl">Rain today</div></div>
@@ -593,7 +603,7 @@ elif tab_choice == "🤖 AI Deep Dive":
              "Is this plant correctly placed? What should I do?",
              "When and how should I prune this?",
              "What biological fertiliser works best?",
-             "How to protect this plant over winter in my location?"]
+             "How to protect this plant over Sofia winter?"]
     qcols = st.columns(3)
     for i,q in enumerate(quick):
         if qcols[i%3].button(q, key=f"qq{i}"): question=q
@@ -634,11 +644,8 @@ elif tab_choice == "🤖 AI Deep Dive":
     gen_q = st.text_area("General question", height=70,
         placeholder="What should I do in my garden this week?\nBest organic feed for containers?\nHow to protect bulbs from frost?")
     if st.button("🤖 Ask", use_container_width=True, key="gen_ask") and gen_q:
-        loc = st.session_state.get("location", {})
-        climate = st.session_state.get("climate_desc","temperate")
-        loc_name = f"{loc.get('name','')}, {loc.get('country','')}"
-        ctx = (f"Garden location: {loc_name}. Climate: {climate}. {today.strftime('%d %B %Y')}. " + (f"Current weather: {wx['temp_now']}°C, {wx['desc_now']}, rain {wx['weekly_rain']:.0f}mm/week, frost this week: {'yes' if wx['frost_risk'] else 'no'}." if wx.get("ok") else ""))
-        system = f"Expert organic gardener. Location: {loc_name}. Climate: {climate}. Practical advice with exact months for this specific climate. Biological/organic products only. Under 250 words."
+        ctx = (f"Sofia garden. {today.strftime('%d %B %Y')}. " + (f"{wx['temp_now']}°C, {wx['desc_now']}, rain {wx['weekly_rain']:.0f}mm/week, frost: {'yes' if wx['frost_risk'] else 'no'}." if wx.get("ok") else ""))
+        system = "Expert organic gardener, Sofia Bulgaria continental climate. Practical, exact months, biological products only. Under 250 words."
         with st.spinner("Thinking…"):
             try: st.markdown(f'<div class="ai-box">{ask_claude(system, ctx+"\n\n"+gen_q)}</div>', unsafe_allow_html=True)
             except Exception as e: st.error(f"Error: {e}")

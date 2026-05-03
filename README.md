@@ -1,19 +1,22 @@
-# 🌿 Garden Planner — Sofia Edition
+# 🌿 Garden Planner
 
-A Streamlit web application for managing your garden plants with live weather-aware care schedules, sun placement advice, and AI-powered deep-dive analysis. Built for the **continental climate of Sofia, Bulgaria** (hot dry summers, cold winters, frost October–April).
+A Streamlit web application for managing your garden plants with live weather-aware care schedules, sun placement advice, and AI-powered deep-dive analysis. Works for **any location worldwide** — type your city name and the app fetches local weather and adapts all advice to your specific climate automatically.
+
+Defaults to Sofia, Bulgaria on first launch; change location any time from the sidebar.
 
 ---
 
 ## Features
 
-- **Live weather** — 7-day forecast for Sofia from Open-Meteo (free, no API key needed); drives alerts for frost, dry soil, high UV, and heavy rain
+- **Location search** — type any city name; the app geocodes it, fetches a live 7-day forecast, and automatically detects the local climate type (continental, oceanic, mediterranean, subtropical, etc.)
+- **Live weather** — 7-day forecast from Open-Meteo (free, no API key needed); drives alerts for frost, dry soil, high UV, and heavy rain
 - **Single upload point** — one file uploader in the sidebar; drop in a CSV or XLSX and the whole app populates instantly
 - **Care data auto-fill** — pruning, feeding, and watering schedules are looked up automatically from a built-in database of 70+ species using the `latin` column; no manual entry needed
 - **Sun position setup** — one click per plant to record where it actually grows (full sun / partial shade / full shade); mismatches flagged immediately
 - **Side-by-side monthly task tables** — tasks for the current month are displayed in separate colour-coded columns by activity type (✂️ Pruning, 🌿 Feeding, 💧 Watering, 🫙 Bulb care) so you can scan at a glance
 - **Four care schedule views** — by month, by plant, bulbs only, or mismatches only
 - **Placement warnings** — plants in the wrong light conditions are flagged with a clear explanation and a pointer to the AI tab
-- **AI Deep Dive** — Claude-powered detailed advice per plant: weather-adjusted timing, biological fertiliser recommendations, replanting/removal decisions, and alternative species for misplaced plants
+- **AI Deep Dive** — Claude-powered detailed advice per plant, fully adapted to your location's climate: weather-adjusted timing, biological fertiliser recommendations, replanting/removal decisions, and alternative species suited to your conditions
 - **Bulb management** — dedicated bulb view with per-species care cards and detailed winter storage instructions
 
 ---
@@ -100,16 +103,19 @@ A ready-to-use template is included: `my_plants_template.csv`.
 
 ## How to use
 
-### 1. Load your plants
+### 1. Set your location
+The app defaults to Sofia, Bulgaria. To change it, open the **📍 Change location** expander in the sidebar, type your city name (e.g. "London", "Paris", "Plovdiv", "Melbourne"), and click **🔍 Search**. The app geocodes the city, fetches a live forecast, detects the climate type, and updates all advice accordingly. The detected climate is shown in the sidebar.
+
+### 2. Load your plants
 Drop your CSV or XLSX into the **sidebar uploader**. The app reads the file, auto-fills any missing care data from the built-in species database, and makes the plant list available across all tabs. You will see a green confirmation badge in the sidebar once the file is loaded. To swap files, click **↩️ Replace plant list**.
 
-### 2. Set sun positions (☀️ Sun Setup)
+### 3. Set sun positions (☀️ Sun Setup)
 For each plant, click one of three buttons — **☀️ Full sun**, **⛅ Partial shade**, or **🌑 Full shade** — to record where it actually grows in your garden. A bulk-assign row at the top lets you set many plants at once by typing a name filter. The currently active button is highlighted. Plants are shown with a status icon: ○ not set, ✅ correctly placed, ⚠️ mismatch.
 
-### 3. Check the dashboard (🌤️ Dashboard)
+### 4. Check the dashboard (🌤️ Dashboard)
 The dashboard shows the live 7-day forecast, a summary of key metrics, weather-based alerts specific to your plant list (e.g. which bulbs to protect if frost is forecast), and this month's tasks displayed as **side-by-side tables** — one column per activity type so pruning, feeding, and bulb care are easy to separate at a glance.
 
-### 4. Browse the care schedule (📋 Care Schedule)
+### 5. Browse the care schedule (📋 Care Schedule)
 Four views to choose from:
 
 - **📅 By month** — select any month and see all tasks across your whole garden, displayed in side-by-side colour-coded tables grouped by activity type (✂️ Pruning, 🌿 Feeding, 💧 Watering, 🫙 Bulb care, 🌱 Bulb planting). Only activity types that have tasks in that month are shown.
@@ -117,7 +123,7 @@ Four views to choose from:
 - **🫙 Bulbs only** — all bulbs and corms with their care cards plus a detailed general winter storage guide.
 - **⚠️ Mismatches only** — plants in the wrong light conditions, each with care cards and a prompt to use the AI tab for replanting advice.
 
-### 5. Get AI advice (🤖 AI Deep Dive)
+### 6. Get AI advice (🤖 AI Deep Dive)
 Select a plant from the dropdown, optionally type a specific question or tap one of the quick-question buttons, and get detailed advice adjusted for the current Sofia weather. Especially useful for misplaced plants — the AI explains whether to replant or remove, the best month to act, and which alternative plants would thrive in that spot instead.
 
 ---
@@ -169,13 +175,15 @@ No other packages are needed. Weather fetching and AI calls both use Python's bu
 
 ---
 
-## Notes on the Sofia climate
+## Climate adaptation
 
-Care schedule timing throughout the app is calibrated for Sofia's continental climate:
+The app detects your climate automatically from the live weather data and your latitude. The following climate types are recognised:
 
-- **Last frost** — typically mid-April; late frosts possible until end of April
-- **First autumn frost** — typically mid-October
-- **Summer** — hot and dry; July–August temperatures regularly exceed 35°C
-- **Winter** — cold, −10°C to −15°C possible; most perennials benefit from mulching
+- **Continental** — cold winters with frost, hot dry summers (e.g. Sofia, Budapest, Warsaw)
+- **Temperate continental** — cold winters, warm summers (e.g. Berlin, Vienna, Kyiv)
+- **Temperate oceanic** — mild winters, cool summers, year-round rain (e.g. London, Amsterdam, Dublin)
+- **Mediterranean** — mild wet winters, hot dry summers (e.g. Rome, Athens, Barcelona)
+- **Subtropical/warm** — mild winters, very hot summers (e.g. Seville, Tel Aviv, Los Angeles)
+- **Subarctic/nordic** — long cold winters, short cool summers (e.g. Helsinki, Reykjavik, Tromsø)
 
-All AI advice is prompted with these climate constraints and recommends only biological and organic products.
+All AI advice and care timing is prompted with the detected climate type and current weather, and recommends only biological and organic products.
