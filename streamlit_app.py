@@ -346,6 +346,87 @@ def require_plants():
         st.info("📂 Upload your plant list using the uploader in the **sidebar on the left**.")
         st.stop()
 
+# ── Sidebar ────────────────────────────────────────────────────────────────────
+with st.sidebar:
+    st.markdown("## 🌿 Garden Planner")
+    loc = st.session_state.location
+    st.caption(f"{loc['name']}, {loc['country']}")
+    st.divider()
+
+    tab_choice = st.radio("Navigate",
+        ["🌤️ Dashboard","☀️ Sun Setup","📋 Care Schedule","🤖 AI Deep Dive","📤 Upload"],
+        label_visibility="collapsed")
+    st.divider()
+
+    # ── Plant list status ─────────────────────────────────────────────────────
+    plant_count = len(st.session_state.plants_df) if st.session_state.plants_df is not None else 0
+    if plant_count:
+        n_set = int((st.session_state.plants_df["actual_sun"].notna() &
+                     (st.session_state.plants_df["actual_sun"] != "")).sum())
+        st.success(f"✅ {plant_count} plants loaded")
+        st.caption(f"☀️ {n_set}/{plant_count} sun positions set")
+        if st.button("↩️ Replace plant list", use_container_width=True):
+            st.session_state.plants_df = None
+            st.session_state.advice_cache = {}
+            st.rerun()
+    else:
+        st.markdown("**📂 Load your plants:**")
+        sb_file = st.file_uploader("CSV or XLSX", type=["csv","xlsx","xls"],
+                                   key="sidebar_uploader", label_visibility="collapsed")
+        if sb_file:
+            parsed, err = parse_upload(sb_file)
+            if err: st.error(f"❌ {err}")
+            else:
+                st.session_state.plants_df = parsed
+                st.session_state.advice_cache = {}
+                st.rerun()
+    st.divider()
+
+    # ── Location search ───────────────────────────────────────────────────────
+    with st.expander("📍 Change location"):
+        city_input = st.text_input("City name", placeholder="e.g. London, Paris, Plovdiv…",
+                                   key="city_input")
+        if st.button("🔍 Search", use_container_width=True) and city_input:
+            with st.spinner(f"Searching for {city_input}…"):
+                geo = geocode_location(city_input)
+                if "error" in geo:
+                    st.error(geo["error"])
+                else:
+                    st.session_state.location = geo
+                    st.session_state.wx = None
+                    st.session_state.advice_cache = {}
+                    st.rerun()
+
+    # ── Weather ───────────────────────────────────────────────────────────────
+    if st.button("🔄 Refresh Weather", use_container_width=True):
+        st.cache_data.clear()
+        st.session_state.wx = None
+
+    loc = st.session_state.location
+    if st.session_state.wx is None:
+        with st.spinner(f"Fetching weather for {loc['name']}…"):
+            raw = fetch_weather(loc["lat"], loc["lon"], loc["timezone"])
+            st.session_state.wx = parse_weather(raw)
+            wx_data = st.session_state.wx
+            if wx_data.get("ok"):
+                avg_min = min(wx_data["mins"])
+                avg_max = max(wx_data["maxs"])
+                st.session_state.climate_desc = detect_climate(loc["lat"], avg_min, avg_max)
+
+    wx = st.session_state.wx
+    if wx.get("ok"):
+        st.markdown(f"**{wx['temp_now']}°C** · {wx['desc_now']}")
+        st.caption(f"↑{wx['temp_max']}° ↓{wx['temp_min']}° · UV {wx['uv']} · 🌧️ {wx['rain_today']}mm")
+        if wx["frost_risk"]:
+            st.warning(f"❄️ Frost: {', '.join(wx['frost_days'])}")
+    else:
+        st.caption("Weather unavailable")
+    st.divider()
+    today = st.date_input("📅 Date", value=date.today())
+
+df = st.session_state.plants_df
+wx = st.session_state.wx or {"ok": False}
+
 # ══════════════════════════════════════════════════════════════════════════════
 # DASHBOARD
 # ══════════════════════════════════════════════════════════════════════════════
