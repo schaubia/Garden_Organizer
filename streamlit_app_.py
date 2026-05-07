@@ -366,7 +366,7 @@ with st.sidebar:
     st.divider()
 
     tab_choice = st.radio("Navigate",
-        ["🌤️ Dashboard","☀️ Sun Setup","📋 Care Schedule","🤖 AI Deep Dive","📤 Upload"],
+        ["🌤️ Dashboard","☀️ Sun Setup","📋 Care Schedule","🤖 AI Deep Dive","⬇️ CSV Template"],
         label_visibility="collapsed")
     st.divider()
 
@@ -739,17 +739,22 @@ elif tab_choice == "🤖 AI Deep Dive":
 # ══════════════════════════════════════════════════════════════════════════════
 # UPLOAD
 # ══════════════════════════════════════════════════════════════════════════════
-elif tab_choice == "📤 Upload":
-    st.markdown("# 📤 Upload Plant List")
-    st.markdown("""Minimum columns: **`name`** + **`sun_needed`** (or `sun` or `zone` with sun values like `full_sun`, `half shade`, `shade`).
-Optional: `latin`, `actual_sun`, `soil`, `is_bulb`, `notes`, `pruning`, `feeding`, `watering`
+elif tab_choice == "⬇️ CSV Template":
+    st.markdown("# ⬇️ Download CSV Template")
+    st.caption("Use this template to prepare your plant list, then upload it via the sidebar.")
+    st.divider()
 
-If `pruning`, `feeding`, `watering` columns are present, the app uses them. If missing, care data is auto-filled from the built-in plant database.""")
+    st.markdown("**Required columns:** `name`, `sun_needed`")
+    st.markdown("**Optional:** `latin`, `actual_sun`, `soil`, `is_bulb`, `notes`, `pruning`, `feeding`, `watering`")
+    st.caption("If `pruning`, `feeding`, `watering` are missing, care data is auto-filled from the built-in plant database using the `latin` column.")
+
     tpl = pd.DataFrame([
         {"name":"Лавандула","latin":"Lavandula angustifolia","sun_needed":"full_sun","actual_sun":"","soil":"well_drained","is_bulb":"no","notes":""},
         {"name":"Хоста","latin":"Hosta spp.","sun_needed":"partial_shade","actual_sun":"","soil":"moist","is_bulb":"no","notes":""},
         {"name":"Далия","latin":"Dahlia spp.","sun_needed":"full_sun","actual_sun":"","soil":"well_drained","is_bulb":"yes","notes":""},
     ])
-    st.download_button("⬇️ Download CSV template", tpl.to_csv(index=False).encode(), "garden_template.csv","text/csv")
+    st.dataframe(tpl, use_container_width=True, hide_index=True)
+    st.download_button("⬇️ Download CSV template", tpl.to_csv(index=False).encode(),
+                       "garden_template.csv", "text/csv", use_container_width=True)
     st.divider()
-    st.info("📂 To load your plant list, use the uploader in the **sidebar on the left**. This tab is only for downloading the template or adding individual plants manually.")
+    st.info("📂 To load your plant list, use the uploader in the **sidebar on the left**.")
