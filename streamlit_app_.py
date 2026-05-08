@@ -276,10 +276,17 @@ def sun_mismatch(needed, actual):
 
 # ── Claude API ─────────────────────────────────────────────────────────────────
 def ask_claude(system, user):
+    import os
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        raise ValueError("ANTHROPIC_API_KEY is not set. Add it in Streamlit Cloud → Settings → Secrets.")
     payload = json.dumps({"model":"claude-sonnet-4-20250514","max_tokens":1000,
                           "system":system,"messages":[{"role":"user","content":user}]}).encode()
     req = urllib.request.Request("https://api.anthropic.com/v1/messages", data=payload,
-          headers={"Content-Type":"application/json","anthropic-version":"2023-06-01"},method="POST")
+          headers={"Content-Type":"application/json",
+                   "anthropic-version":"2023-06-01",
+                   "x-api-key": api_key},
+          method="POST")
     with urllib.request.urlopen(req, timeout=25) as r:
         return json.loads(r.read())["content"][0]["text"]
 
@@ -298,6 +305,19 @@ def build_prompt(row, wx, today):
             f"Plant: {row['name']} ({row.get('latin') or ''})\n{placement}\n"
             f"Soil: {row.get('soil') or 'not specified'} | Bulb: {'yes' if row.get('is_bulb') else 'no'}\n"
             f"Notes: {row.get('notes') or 'none'}\nSeason: {season}, {today.strftime('%d %B %Y')}\n{wx_block}")
+
+SYSTEM_CARE = """You are an expert organic gardener. The user's location and climate are provided in each prompt — adapt ALL advice (timing, frost dates, watering frequency, winter protection) to that specific climate. Do not assume any default location.
+Give PRACTICAL, SPECIFIC, weather-aware advice. Use exact calendar months appropriate for the given location and climate. Recommend only biological/organic products (worm castings, compost tea, seaweed, nettle tea, Biobizz, bone meal, etc.).
+
+Format response EXACTLY as:
+PRUNING: [advice with months relevant to the given climate]
+FEEDING: [biological products, timing, frequency]
+WATERING: [amounts and frequency; note if needed NOW based on weather data]
+BULB_CARE: [only for bulbs — when to lift, store, replant, adjusted for local frost dates. Omit otherwise]
+PLACEMENT: [if sun matches confirm briefly. If wrong: '⚠️ UNSUITABLE' + explain + REPLANT or REMOVE + best month for that climate]
+ALTERNATIVES: [only if UNSUITABLE — 3 plants that thrive in the actual conditions AND the local climate]
+2–4 sentences each."""
+
 def render_tasks_by_type(tasks, month_name=""):
     """Render tasks grouped by type in side-by-side coloured tables."""
     from collections import defaultdict
