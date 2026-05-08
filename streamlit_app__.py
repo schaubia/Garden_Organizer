@@ -274,9 +274,49 @@ def sun_mismatch(needed, actual):
     if diff <= -1: return "under"
     return None
 
-# ── Claude API removed ───────────────────────────────────────────────────────
+# ── Claude API ─────────────────────────────────────────────────────────────────
+def ask_claude(system, user):
+    import os
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        raise ValueError("ANTHROPIC_API_KEY is not set. Add it in Streamlit Cloud → Settings → Secrets.")
+    payload = json.dumps({"model":"claude-sonnet-4-20250514","max_tokens":1000,
+                          "system":system,"messages":[{"role":"user","content":user}]}).encode()
+    req = urllib.request.Request("https://api.anthropic.com/v1/messages", data=payload,
+          headers={"Content-Type":"application/json",
+                   "anthropic-version":"2023-06-01",
+                   "x-api-key": api_key},
+          method="POST")
+    with urllib.request.urlopen(req, timeout=25) as r:
+        return json.loads(r.read())["content"][0]["text"]
 
+def build_prompt(row, wx, today):
+    loc = st.session_state.get("location", {})
+    climate = st.session_state.get("climate_desc", "temperate")
+    loc_name = f"{loc.get('name', '')}, {loc.get('country', '')}" if loc else "unknown location"
+    season = "Spring" if today.month in [3,4,5] else "Summer" if today.month in [6,7,8] else "Autumn" if today.month in [9,10,11] else "Winter"
+    wx_block = (f"Current weather in {loc_name}: {wx['temp_now']}°C {wx['desc_now']}, today {wx['temp_max']}°/{wx['temp_min']}°C, UV {wx['uv']}, rain {wx['rain_today']}mm today / {wx['weekly_rain']:.0f}mm this week. Frost days: {wx['frost_days'] or 'none'}. Soil: {'DRY — irrigation needed' if wx['soil_dry'] else 'adequately moist'}." if wx.get("ok") else "")
+    needed = SUN_OPTIONS.get(str(row.get("sun_needed") or ""), "unknown")
+    actual = SUN_OPTIONS.get(str(row.get("actual_sun") or ""), "not set")
+    mtype  = sun_mismatch(row.get("sun_needed"), row.get("actual_sun"))
+    placement = (f"⚠️ PLACEMENT PROBLEM: needs {needed} but gets {actual} — {'too much sun' if mtype == 'over' else 'too little sun'}."
+                 if mtype else f"Sun: {actual} (needs {needed}).")
+    return (f"Location: {loc_name} | Climate: {climate}\n"
+            f"Plant: {row['name']} ({row.get('latin') or ''})\n{placement}\n"
+            f"Soil: {row.get('soil') or 'not specified'} | Bulb: {'yes' if row.get('is_bulb') else 'no'}\n"
+            f"Notes: {row.get('notes') or 'none'}\nSeason: {season}, {today.strftime('%d %B %Y')}\n{wx_block}")
 
+SYSTEM_CARE = """You are an expert organic gardener. The user's location and climate are provided in each prompt — adapt ALL advice (timing, frost dates, watering frequency, winter protection) to that specific climate. Do not assume any default location.
+Give PRACTICAL, SPECIFIC, weather-aware advice. Use exact calendar months appropriate for the given location and climate. Recommend only biological/organic products (worm castings, compost tea, seaweed, nettle tea, Biobizz, bone meal, etc.).
+
+Format response EXACTLY as:
+PRUNING: [advice with months relevant to the given climate]
+FEEDING: [biological products, timing, frequency]
+WATERING: [amounts and frequency; note if needed NOW based on weather data]
+BULB_CARE: [only for bulbs — when to lift, store, replant, adjusted for local frost dates. Omit otherwise]
+PLACEMENT: [if sun matches confirm briefly. If wrong: '⚠️ UNSUITABLE' + explain + REPLANT or REMOVE + best month for that climate]
+ALTERNATIVES: [only if UNSUITABLE — 3 plants that thrive in the actual conditions AND the local climate]
+2–4 sentences each."""
 
 def render_tasks_by_type(tasks, month_name=""):
     """Render tasks grouped by type in side-by-side coloured tables."""
@@ -329,6 +369,7 @@ def require_plants():
 # ── Session state initialisation ──────────────────────────────────────────────
 for k, v in [
     ("plants_df",    None),
+    ("advice_cache", {}),
     ("wx",           None),
     ("location",     {"name":"Sofia","country":"Bulgaria","region":"Sofia-Capital",
                       "lat":42.698,"lon":23.322,"timezone":"Europe/Sofia","elevation":550}),
@@ -345,7 +386,7 @@ with st.sidebar:
     st.divider()
 
     tab_choice = st.radio("Navigate",
-        ["🌤️ Dashboard","☀️ Sun Setup","📋 Care Schedule","⬇️ CSV Template"],
+        ["🌤️ Dashboard","☀️ Sun Setup","📋 Care Schedule","🤖 AI Deep Dive","⬇️ CSV Template"],
         label_visibility="collapsed")
     st.divider()
 
@@ -358,6 +399,7 @@ with st.sidebar:
         st.caption(f"☀️ {n_set}/{plant_count} sun positions set")
         if st.button("↩️ Replace plant list", use_container_width=True):
             st.session_state.plants_df = None
+            st.session_state.advice_cache = {}
             st.rerun()
     else:
         st.markdown("**📂 Load your plants:**")
@@ -368,6 +410,7 @@ with st.sidebar:
             if err: st.error(f"❌ {err}")
             else:
                 st.session_state.plants_df = parsed
+                st.session_state.advice_cache = {}
                 st.rerun()
     st.divider()
 
@@ -383,6 +426,7 @@ with st.sidebar:
                 else:
                     st.session_state.location = geo
                     st.session_state.wx = None
+                    st.session_state.advice_cache = {}
                     st.rerun()
 
     # ── Weather ───────────────────────────────────────────────────────────────
@@ -578,7 +622,7 @@ elif tab_choice == "📋 Care Schedule":
                     actual_lbl = SUN_OPTIONS.get(str(row.get("actual_sun") or ""),"?")
                     msg = (f"Gets <b>{actual_lbl}</b> but needs <b>{needed_lbl}</b> — "
                            f"{'too much sun — may scorch or dry out.' if mtype=='over' else 'too little sun — may not flower or grow properly.'} "
-                           f"See the Care Schedule → By plant view for detailed care instructions.")
+                           f"Use the 🤖 AI Deep Dive tab for specific replanting advice.")
                     st.markdown(f"""<div class="care-card" style="background:#fdecea;border:1.5px solid #c0392b">
                       <div class="care-title" style="color:#c0392b">⚠️ Placement Problem</div>
                       <div class="care-body">{msg}</div>
@@ -624,7 +668,7 @@ elif tab_choice == "📋 Care Schedule":
                     if row.get("latin"): st.caption(f"*{row['latin']}*")
                     st.markdown(f"""<div class="care-card" style="background:#fdecea;border:1.5px solid #c0392b">
                       <div class="care-title" style="color:#c0392b">⚠️ Placement Problem</div>
-                      <div class="care-body">Needs <b>{needed}</b> but currently gets <b>{actual}</b> — {"too much sun: may scorch, dry out, or fail to thrive." if mtype=="over" else "too little sun: likely poor flowering, weak growth, possible fungal issues."}<br><br>See the full care cards in <b>📋 Care Schedule → By plant</b> for detailed instructions.</div>
+                      <div class="care-body">Needs <b>{needed}</b> but currently gets <b>{actual}</b> — {"too much sun: may scorch, dry out, or fail to thrive." if mtype=="over" else "too little sun: likely poor flowering, weak growth, possible fungal issues."}<br><br>Use <b>🤖 AI Deep Dive</b> for specific advice on whether to replant, remove, or adapt the conditions.</div>
                     </div>""", unsafe_allow_html=True)
                     for care_key,(bg,fg,title) in CARE_COLORS.items():
                         text = row.get(care_key) or lookup_care(row.get("latin"))[care_key]
@@ -636,6 +680,82 @@ elif tab_choice == "📋 Care Schedule":
 # ══════════════════════════════════════════════════════════════════════════════
 # AI DEEP DIVE
 # ══════════════════════════════════════════════════════════════════════════════
+elif tab_choice == "🤖 AI Deep Dive":
+    st.markdown("# 🤖 AI Deep Dive")
+    st.caption("Get detailed, weather-aware advice for a specific plant — especially useful for placement problems.")
+    require_plants()
+
+    plant_opts = df["name"].tolist()
+    selected = st.selectbox("Choose a plant", plant_opts)
+    row = df[df["name"]==selected].iloc[0]
+
+    needed = SUN_OPTIONS.get(str(row.get("sun_needed") or ""),"?")
+    actual = SUN_OPTIONS.get(str(row.get("actual_sun") or ""),"— not set —")
+    mtype  = sun_mismatch(row.get("sun_needed"), row.get("actual_sun"))
+    if mtype:
+        st.warning(f"⚠️ **{selected}** needs {needed} but gets {actual}")
+    elif row.get("actual_sun"):
+        st.success(f"✅ {selected} · needs {needed} · gets {actual} — placement OK")
+    else:
+        st.info(f"ℹ️ Sun position not set yet for {selected}")
+
+    question = st.text_area("Specific question (optional — or just ask for full advice)",
+        height=90, placeholder="Why is it not flowering? When exactly should I prune? What to plant here instead?")
+
+    quick = ["Give me full care advice for this plant",
+             "Is this plant correctly placed? What should I do?",
+             "When and how should I prune this?",
+             "What biological fertiliser works best?",
+             "How to protect this plant over winter in my location?"]
+    qcols = st.columns(3)
+    for i,q in enumerate(quick):
+        if qcols[i%3].button(q, key=f"qq{i}"): question=q
+
+    if st.button("🤖 Get AI advice", use_container_width=True) and question:
+        prompt = build_prompt(row, wx, today) + f"\n\nSpecific question: {question}"
+        with st.spinner(f"Analysing {selected}…"):
+            try:
+                advice = ask_claude(SYSTEM_CARE, prompt)
+                st.session_state.advice_cache[selected] = advice
+                SEC = {"PRUNING":("✂️ Pruning","#eaf2e0","#2c5015"),
+                       "FEEDING":("🌿 Feeding","#f0f7e8","#1a5226"),
+                       "WATERING":("💧 Watering","#e8f3fb","#1a3a5c"),
+                       "BULB_CARE":("🫙 Bulb Care","#fef9e8","#5c4a00"),
+                       "PLACEMENT":("📍 Placement","#fff8f0","#7a3000"),
+                       "ALTERNATIVES":("🌱 Alternatives","#f3eeff","#3a1a7a")}
+                parsed = {}; cur = None
+                for line in advice.split("\n"):
+                    for sec in SEC:
+                        if line.strip().startswith(sec+":"):
+                            cur=sec; parsed[sec]=line.split(":",1)[1].strip(); break
+                    else:
+                        if cur and line.strip(): parsed[cur]=parsed.get(cur,"")+" "+line.strip()
+                if parsed:
+                    for sec,(title,bg,fg) in SEC.items():
+                        if sec in parsed and parsed[sec].strip():
+                            border = "2px solid #c0392b" if "UNSUITABLE" in parsed[sec] and sec=="PLACEMENT" else "none"
+                            st.markdown(f"""<div class="care-card" style="background:{bg};border:{border}">
+                              <div class="care-title" style="color:{fg}">{title}</div>
+                              <div class="care-body">{parsed[sec].strip()}</div></div>""", unsafe_allow_html=True)
+                else:
+                    st.markdown(f'<div class="ai-box">{advice}</div>', unsafe_allow_html=True)
+            except Exception as e: st.error(f"Error: {e}")
+
+    # General question
+    st.divider()
+    st.markdown("**Or ask a general garden question:**")
+    gen_q = st.text_area("General question", height=70,
+        placeholder="What should I do in my garden this week?\nBest organic feed for containers?\nHow to protect bulbs from frost?")
+    if st.button("🤖 Ask", use_container_width=True, key="gen_ask") and gen_q:
+        loc = st.session_state.get("location", {})
+        climate = st.session_state.get("climate_desc","temperate")
+        loc_name = f"{loc.get('name','')}, {loc.get('country','')}"
+        ctx = (f"Garden location: {loc_name}. Climate: {climate}. {today.strftime('%d %B %Y')}. " + (f"Current weather: {wx['temp_now']}°C, {wx['desc_now']}, rain {wx['weekly_rain']:.0f}mm/week, frost this week: {'yes' if wx['frost_risk'] else 'no'}." if wx.get("ok") else ""))
+        system = f"Expert organic gardener. Location: {loc_name}. Climate: {climate}. Practical advice with exact months for this specific climate. Biological/organic products only. Under 250 words."
+        with st.spinner("Thinking…"):
+            try: st.markdown(f'<div class="ai-box">{ask_claude(system, ctx+"\n\n"+gen_q)}</div>', unsafe_allow_html=True)
+            except Exception as e: st.error(f"Error: {e}")
+
 # ══════════════════════════════════════════════════════════════════════════════
 # UPLOAD
 # ══════════════════════════════════════════════════════════════════════════════
