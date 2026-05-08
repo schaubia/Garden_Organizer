@@ -16,7 +16,6 @@ Defaults to Sofia, Bulgaria on first launch; change location any time from the s
 - **Side-by-side monthly task tables** — tasks for the current month are displayed in separate colour-coded columns by activity type (✂️ Pruning, 🌿 Feeding, 💧 Watering, 🫙 Bulb care) so you can scan at a glance
 - **Four care schedule views** — by month, by plant, bulbs only, or mismatches only
 - **Placement warnings** — plants in the wrong light conditions are flagged with a clear explanation and a pointer to the AI tab
-- **AI Deep Dive** — Claude-powered detailed advice per plant, fully adapted to your location's climate: weather-adjusted timing, biological fertiliser recommendations, replanting/removal decisions, and alternative species suited to your conditions
 - **Bulb management** — dedicated bulb view with per-species care cards and detailed winter storage instructions
 
 ---
@@ -121,7 +120,7 @@ Four views to choose from:
 - **📅 By month** — select any month and see all tasks across your whole garden, displayed in side-by-side colour-coded tables grouped by activity type (✂️ Pruning, 🌿 Feeding, 💧 Watering, 🫙 Bulb care, 🌱 Bulb planting). Only activity types that have tasks in that month are shown.
 - **🌿 By plant** — expand any plant to see its three care cards (pruning, feeding, watering) always visible without any extra clicks. Cards due this month show a green **📅 Due this month** badge. Placement warnings appear inline.
 - **🫙 Bulbs only** — all bulbs and corms with their care cards plus a detailed general winter storage guide.
-- **⚠️ Mismatches only** — plants in the wrong light conditions, each with care cards and a prompt to use the AI tab for replanting advice.
+- **⚠️ Mismatches only** — plants in the wrong light conditions, each with care cards and detailed instructions on whether to replant or remove.
 
 ### 6. Get AI advice (🤖 AI Deep Dive)
 Select a plant from the dropdown, optionally type a specific question or tap one of the quick-question buttons, and get detailed advice adjusted for the current Sofia weather. Especially useful for misplaced plants — the AI explains whether to replant or remove, the best month to act, and which alternative plants would thrive in that spot instead.
@@ -151,17 +150,6 @@ Weather is fetched from [Open-Meteo](https://open-meteo.com/) — a free, open-s
 
 ---
 
-## AI features
-
-The **🤖 AI Deep Dive** tab uses the **Claude Sonnet** model via the Anthropic API. This requires an API key:
-
-```
-ANTHROPIC_API_KEY=sk-ant-...
-```
-
-Set this as an environment variable when running locally, or as a Streamlit secret when deploying to Streamlit Cloud (Settings → Secrets). All other tabs — care schedules, weather, sun setup, placement detection — work fully without the key.
-
----
 
 ## Dependencies
 
