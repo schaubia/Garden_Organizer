@@ -1,177 +1,198 @@
-# 🌿 Garden Planner
+# 🌿 Gradinata
 
-A Streamlit web application for managing your garden plants with live weather-aware care schedules, sun placement advice, and AI-powered deep-dive analysis. Works for **any location worldwide** — type your city name and the app fetches local weather and adapts all advice to your specific climate automatically.
-
-Defaults to Sofia, Bulgaria on first launch; change location any time from the sidebar.
-
----
-
-## Features
-
-- **Location search** — type any city name; the app geocodes it, fetches a live 7-day forecast, and automatically detects the local climate type (continental, oceanic, mediterranean, subtropical, etc.)
-- **Live weather** — 7-day forecast from Open-Meteo (free, no API key needed); drives alerts for frost, dry soil, high UV, and heavy rain
-- **Single upload point** — one file uploader in the sidebar; drop in a CSV or XLSX and the whole app populates instantly
-- **Care data auto-fill** — pruning, feeding, and watering schedules are looked up automatically from a built-in database of 70+ species using the `latin` column; no manual entry needed
-- **Sun position setup** — one click per plant to record where it actually grows (full sun / partial shade / full shade); mismatches flagged immediately
-- **Side-by-side monthly task tables** — tasks for the current month are displayed in separate colour-coded columns by activity type (✂️ Pruning, 🌿 Feeding, 💧 Watering, 🫙 Bulb care) so you can scan at a glance
-- **Four care schedule views** — by month, by plant, bulbs only, or mismatches only
-- **Placement warnings** — plants in the wrong light conditions are flagged with a clear explanation and a pointer to the AI tab
-- **Bulb management** — dedicated bulb view with per-species care cards and detailed winter storage instructions
+**Smart Garden Assistant**
+Plan new plants, manage care for existing ones, and track climate projections — all in one place.
 
 ---
 
-## Project structure
+## What the app does
+
+Gradinata consolidates two standalone projects into one product:
+
+- **Planning** — enter your garden's GPS coordinates and receive personalised plant recommendations based on real climate data, soil conditions, and climate projections
+- **Compare** — see which recommended plants you already grow, which top picks you're missing, and which of your existing plants didn't make the list
+- **Care** — load your plant list and get a concrete schedule: when to prune, feed, and water, with automatic weather alerts for frost, drought, and high UV
+
+The key connection between the modules: once you generate a plan, the plants are automatically loaded into the care schedule — no manual entry required. Upload your existing plant list separately to unlock the Compare tab.
+
+---
+
+## File structure
 
 ```
-garden_planner/
-├── app.py                    # Main Streamlit application
-├── requirements.txt          # Python dependencies
-├── my_plants_template.csv    # Example CSV template
-└── README.md                 # This file
+streamlit_app.py          ← main file (run this / deployed on Streamlit Cloud)
+garden_planner_core.py    ← recommendation and clustering logic
+climate_projection.py     ← IPCC-based climate projections
+pfaf_plants.csv           ← PFAF plant database (required for Planning tab)
+requirements.txt          ← Python dependencies
+gradinata_template.csv    ← template for manually entering plants
+README.md                 ← this file
 ```
+
+> **Important:** `garden_planner_core.py`, `climate_projection.py`, and the PFAF CSV must all be in the same folder as `streamlit_app.py`. Without them the 🗺️ Planning, 🔍 Compare, 📐 Garden Grid, and 🌍 Climate tabs will not work, but all other tabs (Dashboard, Care Schedule, Sun Setup, Template) are fully functional on their own.
 
 ---
 
 ## Installation
 
-### Prerequisites
+### Requirements
 
-- Python 3.10 or higher
+- Python 3.9 or newer
 - pip
 
 ### Steps
 
 ```bash
-# Clone or download the project folder
-cd garden_planner
+# 1. Clone or extract the project
+cd gradinata
 
-# Create a virtual environment (recommended)
-python -m venv .venv
-source .venv/bin/activate        # Linux / macOS
-.venv\Scripts\activate           # Windows
+# 2. Install dependencies
+pip install streamlit pandas pillow openpyxl
 
-# Install dependencies
-pip install -r requirements.txt
-
-# Run the app
-streamlit run app.py
+# 3. Run
+streamlit run streamlit_app.py
 ```
 
-The app will open at `http://localhost:8501`.
+The app opens automatically at `http://localhost:8501`
+
+### Deploying to the cloud (Streamlit Community Cloud)
+
+1. Push all files to a GitHub repository
+2. Log in at [share.streamlit.io](https://share.streamlit.io)
+3. Connect the repo → select `streamlit_app.py` → Deploy
 
 ---
 
-## Deploying to Streamlit Community Cloud
+## Tabs and features
 
-1. Push the `garden_planner/` folder to a GitHub repository
-2. Go to [share.streamlit.io](https://share.streamlit.io) and connect your repo
-3. Set the main file path to `app.py`
-4. Add your Anthropic API key as a secret:
-   - In the Streamlit Cloud dashboard → **Settings → Secrets**
-   - Add: `ANTHROPIC_API_KEY = "sk-ant-..."`
-5. Deploy — weather fetching requires no additional keys
+### 🗺️ Planning
+Enter coordinates (latitude/longitude) and preferences, click **Generate**, and receive:
+- A ranked list of recommended plants based on real suitability scores
+- Companion planting clusters (which plants grow well together)
+- Automatic loading of all plants into the Care Schedule tab
 
----
+### 🔍 Compare
+Compare the AI recommendations against your existing plant list (uploaded via the sidebar):
+- **Summary metrics** — how many of your plants are recommended, how many top picks you're missing, and what percentage of your garden matches the recommendations
+- **Already have** — your plants that appear in the recommendations, sorted by suitability score
+- **Top plants to add** — highest-scoring recommendations you don't currently grow
+- **Not recommended** — your plants that didn't rank for your location (may still be perfectly fine)
+- **Download** — export the full comparison as CSV
 
-## Your plant CSV file
+> To use Compare, generate a plan from Planning **and** upload your existing plants separately via the sidebar. Plants loaded automatically from Planning won't be used as the "existing garden" for comparison.
 
-The app accepts CSV or XLSX. Upload using the **sidebar uploader** — this is the only upload point in the app.
+### 🌤️ Dashboard
+- Live weather for your location (Open-Meteo API)
+- 7-day forecast
+- Tasks due this month
+- Alerts for frost, dry soil, high UV, and heavy rain
 
-### Columns
+### 📋 Care Schedule
+Three views:
+- **By month** — all tasks for a selected month
+- **By plant** — full care card with pruning, feeding, and watering instructions
+- **Mismatches only** — plants placed in the wrong light conditions
 
-| Column | Required | Description |
-|--------|----------|-------------|
-| `name` | ✅ | Plant name (Bulgarian or English) |
-| `sun_needed` | ✅ | Light requirement: `full_sun`, `partial_shade`, `half shade`, or `shade` |
-| `latin` | recommended | Latin name — used to match species in the built-in care database |
-| `actual_sun` | optional | Where the plant actually grows; can also be set in the app via ☀️ Sun Setup |
-| `soil` | optional | `well_drained`, `moist`, `clay`, `sandy`, or `rich` |
-| `is_bulb` | optional | `yes` or `no` |
-| `notes` | optional | Free text notes |
-| `pruning` | optional | Custom pruning text — overrides the built-in database for this plant |
-| `feeding` | optional | Custom feeding text — overrides the built-in database |
-| `watering` | optional | Custom watering text — overrides the built-in database |
-| `pruning_months` | optional | Comma-separated month numbers, e.g. `3,9` for March and September |
-| `feeding_months` | optional | Comma-separated month numbers |
+### ☀️ Sun Setup
+Assign the actual sun exposure for each plant (full sun / partial shade / full shade). The app compares this against the plant's requirements and flags any mismatches.
 
-> **Tip:** The `zone` and `sun` columns are also accepted as aliases for `sun_needed` when they contain sun values such as `full_sun`, `half shade`, or `shade`. This means your existing catalogue files upload without any renaming.
+### 📐 Garden Grid
+A visual drag-and-drop garden grid, colour-coded by companion planting clusters. Download as a standalone HTML file that works offline.
 
-A ready-to-use template is included: `my_plants_template.csv`.
+### 🌍 Climate
+Climate projection for your area based on IPCC data — expected changes in temperature, rainfall, and growing season length.
 
----
-
-## How to use
-
-### 1. Set your location
-The app defaults to Sofia, Bulgaria. To change it, open the **📍 Change location** expander in the sidebar, type your city name (e.g. "London", "Paris", "Plovdiv", "Melbourne"), and click **🔍 Search**. The app geocodes the city, fetches a live forecast, detects the climate type, and updates all advice accordingly. The detected climate is shown in the sidebar.
-
-### 2. Load your plants
-Drop your CSV or XLSX into the **sidebar uploader**. The app reads the file, auto-fills any missing care data from the built-in species database, and makes the plant list available across all tabs. You will see a green confirmation badge in the sidebar once the file is loaded. To swap files, click **↩️ Replace plant list**.
-
-### 3. Set sun positions (☀️ Sun Setup)
-For each plant, click one of three buttons — **☀️ Full sun**, **⛅ Partial shade**, or **🌑 Full shade** — to record where it actually grows in your garden. A bulk-assign row at the top lets you set many plants at once by typing a name filter. The currently active button is highlighted. Plants are shown with a status icon: ○ not set, ✅ correctly placed, ⚠️ mismatch.
-
-### 4. Check the dashboard (🌤️ Dashboard)
-The dashboard shows the live 7-day forecast, a summary of key metrics, weather-based alerts specific to your plant list (e.g. which bulbs to protect if frost is forecast), and this month's tasks displayed as **side-by-side tables** — one column per activity type so pruning, feeding, and bulb care are easy to separate at a glance.
-
-### 5. Browse the care schedule (📋 Care Schedule)
-Four views to choose from:
-
-- **📅 By month** — select any month and see all tasks across your whole garden, displayed in side-by-side colour-coded tables grouped by activity type (✂️ Pruning, 🌿 Feeding, 💧 Watering, 🫙 Bulb care, 🌱 Bulb planting). Only activity types that have tasks in that month are shown.
-- **🌿 By plant** — expand any plant to see its three care cards (pruning, feeding, watering) always visible without any extra clicks. Cards due this month show a green **📅 Due this month** badge. Placement warnings appear inline.
-- **🫙 Bulbs only** — all bulbs and corms with their care cards plus a detailed general winter storage guide.
-- **⚠️ Mismatches only** — plants in the wrong light conditions, each with care cards and detailed instructions on whether to replant or remove.
-
-### 6. Get AI advice (🤖 AI Deep Dive)
-Select a plant from the dropdown, optionally type a specific question or tap one of the quick-question buttons, and get detailed advice adjusted for the current Sofia weather. Especially useful for misplaced plants — the AI explains whether to replant or remove, the best month to act, and which alternative plants would thrive in that spot instead.
+### ⬇️ Template
+A CSV template for manually entering your plant list. Download, fill in, upload via the sidebar.
 
 ---
 
-## Built-in care database
+## Loading your plants
 
-The app includes species-level care data for 70+ plants common in Bulgarian gardens, covering exact pruning months, biological fertiliser recommendations, and watering frequency:
+**Option A — from Planning (recommended)**
+1. Open the 🗺️ Planning tab
+2. Enter your garden's coordinates
+3. Click **Generate**
+4. Plants load automatically into the Care Schedule
 
-- **Trees and large shrubs** — Walnut, Hazel, Medlar, Ginkgo, Hawthorn, Cotoneaster, Chamaecyparis, Quince, Cornel, Cherry Laurel
-- **Aromatic herbs** — Salvia, Thyme, Lemon balm, Mint
-- **Climbers** — Virginia creeper, Campsis, Clematis, Ivy, Lonicera, Jasmine
-- **Flowering shrubs** — Rose, Pyracantha, Mahonia, Weigela, Deutzia, Spiraea, Callicarpa, Barberry, Privet, Hibiscus, Vinca
-- **Perennials** — Hosta, Echinacea, Rudbeckia, Paeonia, Hydrangea, Phlox, Stachys, Bergenia, Convallaria, Sempervivum, Lupinus
-- **Bulbs and corms** — Dahlia, Tulip, Iris, Hyacinth, Ranunculus, Allium, Muscari, Scilla, Gladiolus
-- **Ground covers and alpines** — Aubrieta, Iberis, Cerastium, Edelweiss, Santolina, Festuca, Calluna, Aeonium
-- **Annuals** — Calendula, California poppy, Bellis, Antirrhinum
+**Option B — manual CSV upload**
+1. Download the template from the ⬇️ Template tab
+2. Fill in the `name` and `sun_needed` columns (required)
+3. Upload the file via the sidebar
 
-If a plant is not found in the database, a generic care schedule is used as fallback and a note is shown.
+> **For the Compare tab:** generate a plan first (Option A), then *also* upload your existing plants via the sidebar (Option B). The comparison works by having both sources loaded at the same time.
+
+### CSV format reference
+
+| Column | Required | Values | Example |
+|---|---|---|---|
+| `name` | ✅ | free text | Lavender |
+| `sun_needed` | ✅ | `full_sun` / `partial_shade` / `full_shade` | `full_sun` |
+| `latin` | — | Latin genus and species | `Lavandula angustifolia` |
+| `actual_sun` | — | same as sun_needed | `full_sun` |
+| `soil` | — | `well_drained`, `moist`, `clay`, `sandy`, `rich` | `well_drained` |
+| `is_bulb` | — | `yes` / `no` | `no` |
+| `notes` | — | free text | |
+
+If `pruning`, `feeding`, and `watering` columns are absent, they are filled automatically from the built-in database covering 60+ plant genera.
 
 ---
 
-## Weather data
+## Data sources
 
-Weather is fetched from [Open-Meteo](https://open-meteo.com/) — a free, open-source weather API requiring no API key. Data is cached for 1 hour to avoid unnecessary requests. If the API is unreachable (e.g. offline), the rest of the app continues to work normally; weather-based alerts are simply not shown. Use the **🔄 Refresh Weather** button in the sidebar to force a fresh fetch.
+| Data | Source | Refresh |
+|---|---|---|
+| Weather forecast | [Open-Meteo API](https://open-meteo.com) | Hourly |
+| Geocoding | Open-Meteo Geocoding API | On search |
+| Plant database | PFAF (Plants for a Future) | Built-in |
+| Climate projections | IPCC data | Built-in |
+| Care instructions | Botanical care database — 60+ genera | Built-in |
+
+An internet connection is required only for live weather and geocoding. Everything else runs locally.
 
 ---
 
+## Adding plants to the care database
+
+The care database lives in the `CARE_DB` dictionary in `streamlit_app.py`. To add a new genus:
+
+```python
+"Ficus": {
+    "pruning": "Feb–Mar: light shape only. Avoid heavy pruning.",
+    "feeding": "Apr–Aug: balanced liquid feed monthly.",
+    "watering": "Keep moist spring–autumn. Reduce watering in winter.",
+    "pruning_months": "2,3",
+    "feeding_months": "4,5,6,7,8",
+    "water_freq": "moderate",
+},
+```
+
+The key is the Latin genus name (first word of the Latin plant name only).
+
+---
 
 ## Dependencies
 
 ```
-streamlit>=1.32.0
-pandas>=2.0.0
-openpyxl>=3.1.0
+streamlit >= 1.28
+pandas >= 2.0
+numpy >= 1.24
+pillow >= 10.0
+openpyxl >= 3.1
+requests >= 2.31
+geopy >= 2.4
+meteostat >= 1.6
+matplotlib >= 3.7
+scikit-learn >= 1.3
 ```
 
-No other packages are needed. Weather fetching and AI calls both use Python's built-in `urllib`.
+All dependencies are also listed in `requirements.txt` — Streamlit Cloud installs them automatically from that file.
 
 ---
 
-## Climate adaptation
+## License
 
-The app detects your climate automatically from the live weather data and your latitude. The following climate types are recognised:
+© 2025 Dantara Software EOOD. All rights reserved.
 
-- **Continental** — cold winters with frost, hot dry summers (e.g. Sofia, Budapest, Warsaw)
-- **Temperate continental** — cold winters, warm summers (e.g. Berlin, Vienna, Kyiv)
-- **Temperate oceanic** — mild winters, cool summers, year-round rain (e.g. London, Amsterdam, Dublin)
-- **Mediterranean** — mild wet winters, hot dry summers (e.g. Rome, Athens, Barcelona)
-- **Subtropical/warm** — mild winters, very hot summers (e.g. Seville, Tel Aviv, Los Angeles)
-- **Subarctic/nordic** — long cold winters, short cool summers (e.g. Helsinki, Reykjavik, Tromsø)
-
-All AI advice and care timing is prompted with the detected climate type and current weather, and recommends only biological and organic products.
+Open-Meteo data is used under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+PFAF data is used for educational purposes.
