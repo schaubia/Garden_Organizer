@@ -809,13 +809,27 @@ with tab_compare:
     has_plan    = st.session_state.planner_df is not None
     has_garden  = st.session_state.garden_df is not None
 
-    if not has_plan and not has_garden:
-        st.info("Generate a plan from **🗺️ Planning**, then upload your existing plants via the sidebar — or do it in either order.")
-    elif not has_plan:
-        st.info("Generate a plan from the **🗺️ Planning** tab to compare against your garden.")
-    elif not has_garden:
-        st.info("Upload your existing plant list via the sidebar (CSV or XLSX) to compare against the recommendations.")
-    else:
+    # ── Status bar — always visible, shows what is loaded and what is missing ──
+    col_s1, col_s2 = st.columns(2)
+    with col_s1:
+        if has_plan:
+            n = len(st.session_state.planner_df)
+            st.success(f"✅ **Generated plan** — {n} plants")
+        else:
+            st.warning("⬜ **Generated plan** — not yet generated. Go to the 🗺️ Planning tab and click Generate.")
+    with col_s2:
+        if has_garden:
+            n = len(st.session_state.garden_df)
+            st.success(f"✅ **Your garden** — {n} plants uploaded")
+        else:
+            st.warning("⬜ **Your garden** — not yet uploaded. Use the sidebar to upload a CSV or XLSX.")
+
+    if not has_plan or not has_garden:
+        st.info("Both sources are needed for a full comparison. "
+                "You can do them in any order.")
+        st.stop()
+
+    if has_plan and has_garden:
         rec_df    = st.session_state.planner_df.copy()
         garden_df = st.session_state.garden_df.copy()
 

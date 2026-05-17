@@ -540,20 +540,35 @@ with st.sidebar:
     st.caption(f"📍 {loc['name']}, {loc['country']}")
     st.divider()
 
-    plant_count = len(st.session_state.plants_df) if st.session_state.plants_df is not None else 0
-    garden_count = len(st.session_state.garden_df) if st.session_state.garden_df is not None else 0
-    if plant_count:
-        source_label = "from Planning" if st.session_state.plants_from_plan else "from CSV"
-        st.success(f"✅ {plant_count} care plants ({source_label})")
-        if garden_count and st.session_state.plants_from_plan:
-            st.info(f"🔍 {garden_count} existing plants for Compare")
-        if st.button("↩️ Clear all", use_container_width=True):
+    # ── Section 1: Generated plan ─────────────────────────────────────────────
+    st.markdown("**🗺️ Generated plan**")
+    if st.session_state.plants_from_plan and st.session_state.plants_df is not None:
+        plan_count = len(st.session_state.plants_df)
+        st.success(f"✅ {plan_count} plants generated")
+        if st.button("✕ Clear plan", use_container_width=True, key="clear_plan"):
             st.session_state.plants_df = None
             st.session_state.plants_from_plan = False
-            st.session_state.garden_df = None
+            st.session_state.planner_df = None
+            st.session_state.planner_results = None
+            st.session_state.climate_projection = None
             st.rerun()
     else:
-        st.markdown("**📂 Load your plants:**")
+        st.caption("Generate from the **🗺️ Planning** tab")
+
+    st.divider()
+
+    # ── Section 2: Your existing garden (CSV upload) ───────────────────────────
+    st.markdown("**📂 Your existing garden**")
+    garden_count = len(st.session_state.garden_df) if st.session_state.garden_df is not None else 0
+    if garden_count:
+        st.success(f"✅ {garden_count} plants uploaded")
+        if st.button("✕ Clear upload", use_container_width=True, key="clear_upload"):
+            st.session_state.garden_df = None
+            # If no generated plan, also clear plants_df
+            if not st.session_state.plants_from_plan:
+                st.session_state.plants_df = None
+            st.rerun()
+    else:
         sb_file = st.file_uploader("CSV or XLSX", type=["csv","xlsx","xls"],
                                    key="sidebar_uploader", label_visibility="collapsed")
         if sb_file:
@@ -561,15 +576,14 @@ with st.sidebar:
             if err:
                 st.error(f"❌ {err}")
             else:
-                # Map names to English for Compare matching (dictionary-based, no API)
                 parsed = add_english_names(parsed)
-                # Always store as the existing garden for Compare
                 st.session_state.garden_df = parsed
-                # Only use as care-schedule source if no generated plan exists
+                # Use as care source only if no generated plan
                 if not st.session_state.plants_from_plan:
                     st.session_state.plants_df = parsed
                 st.rerun()
-        st.caption("or generate from the **🗺️ Planning** tab")
+        st.caption("Used for **🔍 Compare** and care schedule (if no plan)")
+
     st.divider()
 
     with st.expander("📍 Change location"):
