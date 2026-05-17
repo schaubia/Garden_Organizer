@@ -371,6 +371,105 @@ def parse_upload(f):
         return None, str(e)
 
 
+
+
+# ── Bulgarian → English plant name dictionary ─────────────────────────────────
+BG_TO_EN = {
+    # Trees
+    "дъб": "oak", "бук": "beech", "бор": "pine", "смърч": "spruce",
+    "ела": "fir", "липа": "linden", "бреза": "birch", "топола": "poplar",
+    "върба": "willow", "акация": "acacia", "кестен": "chestnut",
+    "орех": "walnut", "череша": "cherry", "вишня": "sour cherry",
+    "ябълка": "apple", "круша": "pear", "слива": "plum", "праскова": "peach",
+    "кайсия": "apricot", "дюля": "quince", "мушмула": "medlar",
+    "гинко": "ginkgo", "магнолия": "magnolia", "глог": "hawthorn",
+    "трепетлика": "aspen", "явор": "sycamore maple", "клен": "maple",
+    "ясен": "ash", "габър": "hornbeam", "елша": "alder",
+    # Shrubs
+    "люляк": "lilac", "розмарин": "rosemary", "лавандула": "lavender",
+    "хортензия": "hydrangea", "форзиция": "forsythia", "дафина": "laurustinus",
+    "боровинка": "blueberry", "малина": "raspberry", "касис": "blackcurrant",
+    "цариградско грозде": "gooseberry", "шипка": "rose hip / dog rose",
+    "леска": "hazel", "дрян": "cornelian cherry", "калина": "viburnum",
+    "бъз": "elderberry", "трендафил": "rose", "роза": "rose",
+    "жасмин": "jasmine", "клематис": "clematis", "глициния": "wisteria",
+    "хибискус": "hibiscus", "рододендрон": "rhododendron", "азалия": "azalea",
+    "буркан": "forsythia", "дрянка": "dogwood", "пираканта": "firethorn",
+    "котонеастер": "cotoneaster", "берберис": "barberry", "вайгела": "weigela",
+    "спирея": "spiraea", "декзия": "deutzia",
+    # Perennials & bulbs
+    "далия": "dahlia", "ирис": "iris", "лале": "tulip", "нарцис": "daffodil",
+    "зюмбюл": "hyacinth", "крем": "lily", "гладиол": "gladiolus",
+    "лилия": "lily", "божур": "peony", "хоста": "hosta",
+    "ехинацея": "echinacea", "рудбекия": "rudbeckia", "салвия": "salvia",
+    "градински чай": "sage", "жалфия": "sage", "мента": "mint",
+    "маточина": "lemon balm", "мащерка": "thyme", "риган": "oregano",
+    "босилек": "basil", "копър": "dill", "магданоз": "parsley",
+    "рукола": "arugula", "спанак": "spinach", "марула": "lettuce",
+    "астра": "aster", "хризантема": "chrysanthemum", "невен": "marigold",
+    "теменуга": "violet / pansy", "иглика": "primrose", "лютиче": "buttercup",
+    "здравец": "geranium", "пеларгония": "pelargonium", "бегония": "begonia",
+    "петуния": "petunia", "импатиенс": "impatiens", "фуксия": "fuchsia",
+    "клематис": "clematis", "пасифлора": "passionflower",
+    "аквилегия": "columbine", "делфиниум": "delphinium", "луличка": "lupin",
+    "маргаритка": "daisy", "камбанка": "bellflower / campanula",
+    # Climbers & ground cover
+    "бръшлян": "ivy", "дива лоза": "virginia creeper", "хмел": "hop",
+    "лоза": "grapevine", "жимолост": "honeysuckle", "тромпетно цвете": "trumpet vine",
+    # Vegetables
+    "домат": "tomato", "чушка": "pepper", "патладжан": "aubergine",
+    "краставица": "cucumber", "тиква": "pumpkin / squash",
+    "морков": "carrot", "репичка": "radish", "цвекло": "beetroot",
+    "лук": "onion", "чесън": "garlic", "праз": "leek",
+    "зеле": "cabbage", "карфиол": "cauliflower", "броколи": "broccoli",
+    "грах": "pea", "боб": "bean", "царевица": "corn",
+    # Common extras
+    "слънчоглед": "sunflower", "рапица": "rapeseed", "лен": "flax",
+    "памук": "cotton", "тютюн": "tobacco",
+}
+
+def has_cyrillic(text: str) -> bool:
+    """Returns True if string contains Cyrillic characters."""
+    return any("\u0400" <= ch <= "\u04FF" for ch in str(text))
+
+
+def translate_name(name: str) -> str:
+    """
+    Translates a Bulgarian plant name to English using the built-in dictionary.
+    Falls back to the Latin name (if available) or the original name.
+    Matching is case-insensitive and strips whitespace.
+    """
+    if not has_cyrillic(name):
+        return name
+    key = name.strip().lower()
+    # Exact match
+    if key in BG_TO_EN:
+        return BG_TO_EN[key]
+    # Partial match — name contains a known Bulgarian word
+    for bg, en in BG_TO_EN.items():
+        if bg in key:
+            return en
+    return name  # no match found — keep original for display, Latin will handle matching
+
+
+def add_english_names(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Adds a 'name_en' column with English translations.
+    If Latin name exists, uses that as primary matching key.
+    Falls back to dictionary translation, then original name.
+    """
+    def best_english(row):
+        # Latin name is the most reliable matching key
+        latin = str(row.get("latin") or "")
+        if latin and latin.lower() not in ("nan","none",""):
+            # Extract genus as English proxy (works well for PFAF matching)
+            return latin.split()[0]
+        name = str(row.get("name",""))
+        return translate_name(name)
+
+    df["name_en"] = df.apply(best_english, axis=1)
+    return df
+
 # ── garden_plan helpers ───────────────────────────────────────────────────────
 def cluster_color(cluster_id):
     return CLUSTER_COLORS[int(cluster_id) % len(CLUSTER_COLORS)]
@@ -462,6 +561,8 @@ with st.sidebar:
             if err:
                 st.error(f"❌ {err}")
             else:
+                # Map names to English for Compare matching (dictionary-based, no API)
+                parsed = add_english_names(parsed)
                 # Always store as the existing garden for Compare
                 st.session_state.garden_df = parsed
                 # Only use as care-schedule source if no generated plan exists
@@ -716,20 +817,6 @@ with tab_compare:
         rec_commons = {norm(r.get(rec_name_col,"")) for _, r in rec_df.iterrows()}
         rec_latins  = {norm(r.get(rec_latin_col,"")) for _, r in rec_df.iterrows()} if rec_latin_col else set()
 
-        def is_match(garden_row):
-            """True if garden plant appears in recommendations (by common or latin name)."""
-            gn = norm(garden_row.get("name",""))
-            gl = norm(garden_row.get("latin",""))
-            # Exact match
-            if gn in rec_commons or (gl and gl in rec_latins):
-                return True
-            # Genus-level match (first word of latin)
-            if gl:
-                genus = gl.split()[0]
-                if any(genus in rl for rl in rec_latins if rl):
-                    return True
-            return False
-
         def rec_score(garden_row):
             """Return score of the matched recommendation, or None."""
             if not has_plan or rec_df is None: return None
@@ -749,7 +836,9 @@ with tab_compare:
         not_in_rec = garden_df[~garden_df["_matched"]]
 
         # Recommendations not already in garden
-        garden_commons = {norm(r) for r in garden_df["name"]}
+        # Use English names for matching if available
+        name_col_g     = "name_en" if "name_en" in garden_df.columns else "name"
+        garden_commons = {norm(r) for r in garden_df[name_col_g]}
         garden_latins  = {norm(r) for r in garden_df.get("latin", [])} if "latin" in garden_df.columns else set()
 
         def already_have(rec_row):
@@ -759,6 +848,18 @@ with tab_compare:
             if rl:
                 genus = rl.split()[0]
                 if any(genus in gl for gl in garden_latins if gl): return True
+            return False
+
+        def is_match(garden_row):
+            """True if garden plant appears in recommendations (by English name, Latin name, or genus)."""
+            gn = norm(garden_row.get("name_en", garden_row.get("name","")))
+            gl = norm(garden_row.get("latin",""))
+            if gn in rec_commons or (gl and gl in rec_latins):
+                return True
+            if gl:
+                genus = gl.split()[0]
+                if any(genus in rl for rl in rec_latins if rl):
+                    return True
             return False
 
         missing_df = rec_df[~rec_df.apply(already_have, axis=1)]
@@ -793,11 +894,16 @@ with tab_compare:
                     score_badge = (f" · <span style='color:#2E7D32;font-weight:600'>{score:.2f} ⭐</span>"
                                    if score else "")
                     sun = SUN_OPTIONS.get(str(row.get("sun_needed") or ""),"")
+                    name_disp = row["name"]
+                    name_en   = row.get("name_en","")
+                    trans_note = (f"<span style='font-size:0.72rem;color:#5a8a4a;margin-left:6px'>"
+                                  f"→ {name_en}</span>"
+                                  if name_en and name_en != name_disp else "")
                     st.markdown(
                         f'''<div style="background:#f0f7e8;border-left:3px solid #3d6b1e;
                         border-radius:8px;padding:9px 14px;margin-bottom:6px">
-                        <span style="font-weight:600;color:#1a3a0e">{row["name"]}</span>
-                        {score_badge}
+                        <span style="font-weight:600;color:#1a3a0e">{name_disp}</span>
+                        {trans_note}{score_badge}
                         <span style="font-size:0.78rem;color:#888;margin-left:8px">{sun}</span>
                         </div>''', unsafe_allow_html=True)
 
@@ -833,10 +939,15 @@ with tab_compare:
                 st.caption("These plants may still be perfectly fine — they just didn't rank in the top recommendations for your specific location and climate.")
                 for _, row in not_in_rec.iterrows():
                     sun = SUN_OPTIONS.get(str(row.get("sun_needed") or ""),"")
+                    name_disp2 = row["name"]
+                    name_en2   = row.get("name_en","")
+                    trans2 = (f"<span style='font-size:0.72rem;color:#888;margin-left:6px'>→ {name_en2}</span>"
+                              if name_en2 and name_en2 != name_disp2 else "")
                     st.markdown(
                         f'''<div style="background:#f5f5f5;border-left:3px solid #aaa;
                         border-radius:8px;padding:8px 14px;margin-bottom:5px">
-                        <span style="font-weight:500;color:#444">{row["name"]}</span>
+                        <span style="font-weight:500;color:#444">{name_disp2}</span>
+                        {trans2}
                         <span style="font-size:0.78rem;color:#888;margin-left:8px">{sun}</span>
                         </div>''', unsafe_allow_html=True)
 
